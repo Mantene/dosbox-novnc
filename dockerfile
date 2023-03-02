@@ -3,8 +3,7 @@ ENV USER=root
 ENV PASSWORD=password1
 ENV DEBIAN_FRONTEND=noninteractive 
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
-COPY keen /dos/keen
-RUN apt-get update && \
+RUN mkdir /dos && apt-get update && \
 	echo "tzdata tzdata/Areas select America" > ~/tx.txt && \
 	echo "tzdata tzdata/Zones/America select New York" >> ~/tx.txt && \
 	debconf-set-selections ~/tx.txt && \
@@ -14,7 +13,7 @@ RUN apt-get update && \
 	echo $PASSWORD | vncpasswd -f > ~/.vnc/passwd && \
 	chmod 0600 ~/.vnc/passwd && \
 	echo "set border 0" > ~/.ratpoisonrc  && \
-	echo "exec dosbox -conf ~/.dosbox/dosbox.conf -fullscreen -c 'MOUNT C: /dos' -c 'C:' -c 'cd keen' -c 'keen1'">> ~/.ratpoisonrc && \
+	echo "exec dosbox -conf ~/.dosbox/dosbox.conf -fullscreen -c 'MOUNT C: /dos' -c 'C:'">> ~/.ratpoisonrc && \
 	export DOSCONF=$(dosbox -printconf) && \
 	cp $DOSCONF ~/.dosbox/dosbox.conf && \
 	sed -i 's/usescancodes=true/usescancodes=false/' ~/.dosbox/dosbox.conf && \
