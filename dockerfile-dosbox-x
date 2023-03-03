@@ -1,0 +1,69 @@
+FROM fedora:36
+ENV USER=root
+
+RUN \
+    # Install required packages
+	cd /root && \
+	dnf -y update && dnf clean all && \
+	dnf -y --setopt=tsflags=nodocs install wget && \
+	wget https://github.com/rpmsphere/noarch/raw/master/r/rpmsphere-release-36-1.noarch.rpm && \
+	rpm -Uvh rpmsphere-release*rpm && \
+	wget http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-36.noarch.rpm && \
+	rpm -Uvh rpmfusion-free-release*rpm && \
+	dnf -y --setopt=tsflags=nodocs install \
+	python3-websockify \
+	python-websockify \
+	net-tools \
+	git \
+	hostname \
+	procps-ng \
+	which \
+	nano \
+	supervisor \	
+	java-11-openjdk-devel \
+	Xvfb \
+	fluxbox \
+	x11vnc \
+	gtk3 \
+	tigervnc-server \
+	xorg-x11-fonts-base \
+	xterm \
+	lwm \
+	less \
+	zip \
+	unzip \	
+	dosemu \
+	pwgen \
+	xdotool \
+	telnet \
+	mtools \
+#	balance \
+	ca-certificates \
+	dnf-plugins-core \
+	&& dnf clean all
+RUN \
+    # Install noVNC
+    git clone --depth 1 https://github.com/novnc/noVNC.git /root/noVNC && \
+    wget https://github.com/pgaskin/easy-novnc/releases/download/v1.1.0/easy-novnc_linux-64bit && \
+    mv easy-novnc_linux-64bit /usr/local/bin/easy-novnc && chmod +x /usr/local/bin/easy-novnc && \
+    git clone --depth 1 https://github.com/novnc/websockify /root/noVNC/utils/websockify && \
+    rm -rf /root/noVNC/.git && \
+    rm -rf /root/noVNC/utils/websockify/.git 
+#    sed -i -- "s/ps -p/ps -o pid | grep/g" /root/noVNC/utils/launch.sh
+
+RUN	wget https://dbgl.org/download/dbgl096.tar.gz && \
+	tar -zxvf dbgl096.tar.gz && \
+	dnf -y copr enable rob72/DOSBox-X && \
+	dnf -y --setopt=tsflags=nodocs install dosbox-x && dnf clean all
+COPY supervisor/ /etc/supervisor/conf.d/
+COPY startvnc /usr/local/bin
+COPY dosboxconsole /usr/local/bin
+COPY setup.sh /
+RUN  chmod +x /setup.sh && /setup.sh
+
+EXPOSE 8080
+ENV HOME=/root \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    LC_ALL=C.UTF-8 \
+CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]

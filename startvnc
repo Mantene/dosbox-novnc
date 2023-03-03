@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo " *** startvnc script"
+set -e
+
+if [ -z "$VNCPASSWORD" ]; then
+  VNCPASSWORD=`pwgen 8`
+  echo " *** VNC password for this session: $VNCPASSWORD"
+fi
+
+export USER="`whoami`"
+mkdir -p ~/.vnc
+
+echo "$VNCPASSWORD" | tightvncpasswd -f > ~/.vnc/passwd
+chmod 0600 ~/.vnc/passwd
+
+export XKB_DEFAULT_RULES=base # workaround for keyboard layout bug
+tightvncserver -geometry 1024x768 :1
+/root/novnc/utils/novnc_proxy --vnc localhost:5901 --listen localhost:6081
+sleep 1
+tail -f ~/.vnc/*.log

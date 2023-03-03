@@ -1,0 +1,5 @@
+#!/bin/sh
+export SWT_GTK3=0
+symlink=`find "$0" -printf "%l"`
+cd "`dirname "${symlink:-$0}"`"
+"${JAVA_HOME:-/usr}"/bin/java -Djava.library.path=lib -Ddbgl.data.userhome=true -jar dbgl.jar
